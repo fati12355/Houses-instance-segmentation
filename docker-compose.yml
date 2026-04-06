@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  segmentation-api:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - HF_TOKEN=${HF_TOKEN}
+      - MODEL_PATH=/app/models/segmentation.pth
+    volumes:
+      - ./models:/app/models
+      - ./data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  postgres:
+    image: postgres:14
+    environment:
+      POSTGRES_DB: segmentation_db
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

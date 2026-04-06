@@ -1,0 +1,55 @@
+# Create/overwrite .gitignore with proper exclusions
+echo "# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+env/
+venv/
+.venv/
+
+# Model files (TOO LARGE for GitHub)
+*.pth
+*.pt
+*.pkl
+*.h5
+*.onnx
+models/
+*.pth
+
+# Dataset files (TOO LARGE for GitHub)
+data/
+*.jpg
+*.png
+*.jpeg
+*.parquet
+*.json
+!*_annotations.coco.json
+
+# Environment
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Docker
+*.log
+
+# Kaggle
+/kaggle/
+working/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.bak
+" > .gitignore
+
+# Verify .gitignore content
+cat .gitignore
