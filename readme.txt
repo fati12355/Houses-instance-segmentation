@@ -1,7 +1,7 @@
-🏠 Building Segmentation with UNet  (uncomplete readme: project in progress)
+ Building Segmentation with UNet  (uncomplete readme: project in progress)
 A deep learning project for automatic building segmentation from aerial/satellite imagery using a UNet architecture. The model generates pixel-level masks to identify building footprints in aerial images.
 
-📋 Table of Contents
+ Table of Contents
 Overview
 
 Dataset
@@ -22,7 +22,7 @@ API Deployment
 
 Acknowledgments
 
-🎯 Overview
+ Overview
 This project implements a binary segmentation model to detect buildings in aerial/satellite imagery. The model outputs pixel-wise masks where:
 
 1 = Building
@@ -30,21 +30,21 @@ This project implements a binary segmentation model to detect buildings in aeria
 0 = Background
 
 Key Features
-✅ UNet architecture with ResNet34 backbone (pretrained on ImageNet)
+ UNet architecture with ResNet34 backbone (pretrained on ImageNet)
 
-✅ COCO-format dataset integration from Roboflow
+ COCO-format dataset integration from Roboflow
 
-✅ Combined BCE + Dice Loss for handling class imbalance
+ Combined BCE + Dice Loss for handling class imbalance
 
-✅ SAM (Segment Anything Model) integration for mask generation comparison
+ SAM (Segment Anything Model) integration for mask generation comparison
 
-✅ CI/CD pipeline with GitHub Actions
+ CI/CD pipeline with GitHub Actions
 
-✅ Docker containerization for easy deployment
+ Docker containerization for easy deployment
 
-✅ REST API for inference
+ REST API for inference
 
-📊 Dataset
+ Dataset
 Source: Roboflow - Buildings Instance Segmentation Dataset
 
 Format: COCO Segmentation
@@ -68,7 +68,7 @@ Dataset Structure:
 └── test/
     ├── _annotations.coco.json
     └── images/
-🧠 Model Architecture
+ Model Architecture
 UNet with ResNet34 Backbone
 python
 Encoder: ResNet34 (pretrained on ImageNet)
@@ -90,7 +90,7 @@ BCE Loss: Handles pixel-wise classification
 
 Dice Loss: Addresses class imbalance (more buildings = fewer pixels)
 
-📈 Results
+ Results
 Performance Metrics (on Test Set)
 Metric	Score
 IoU (Intersection over Union)	XX.XX%
