@@ -18,7 +18,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of the application
 COPY src/ ./src/
 COPY app.py .
-COPY models/ ./models/
+# COPY models/ ./models/
 
 EXPOSE 5000
 
