@@ -30,7 +30,7 @@ class SecretsManager:
     def get_model_config(self):
         """Get model configuration"""
         return {
-            'model_path': self.get_secret('MODEL_PATH', './models/segmentation.pth'),
+            'model_path': self.get_secret('MODEL_PATH', './models/best_unet_model.pth'),
             'input_size': (512, 512),
             'num_classes': 2,  # background + house
             'device': 'cuda' if self._check_cuda() else 'cpu'
