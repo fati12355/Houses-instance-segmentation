@@ -1,4 +1,4 @@
- Building Segmentation with UNet  (uncomplete readme: project in progress)
+ Building Segmentation with UNet  
 A deep learning project for automatic building segmentation from aerial/satellite imagery using a UNet architecture. The model generates pixel-level masks to identify building footprints in aerial images.
 
  Table of Contents
