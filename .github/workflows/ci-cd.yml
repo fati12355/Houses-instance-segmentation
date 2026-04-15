@@ -72,51 +72,51 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # JOB 3: Deploy to AWS EC2
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+  # # JOB 3: Deploy to AWS EC2
+  # deploy:
+  #   runs-on: ubuntu-latest
+  #   needs: build
+  #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     
-    steps:
-      - name: Deploy to EC2
-        env:
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-          EC2_USER: ${{ secrets.EC2_USER }}
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-        run: |
-          # Save SSH key
-          echo "${{ secrets.EC2_SSH_KEY }}" > deploy_key.pem
-          chmod 600 deploy_key.pem
+  #   steps:
+  #     - name: Deploy to EC2
+  #       env:
+  #         EC2_HOST: ${{ secrets.EC2_HOST }}
+  #         EC2_USER: ${{ secrets.EC2_USER }}
+  #         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+  #       run: |
+  #         # Save SSH key
+  #         echo "${{ secrets.EC2_SSH_KEY }}" > deploy_key.pem
+  #         chmod 600 deploy_key.pem
           
-          # Deploy via SSH (pass DOCKER_PASSWORD as variable)
-          ssh -o StrictHostKeyChecking=no -i deploy_key.pem $EC2_USER@$EC2_HOST << EOF
-            # Login to Docker Hub
-            echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  #         # Deploy via SSH (pass DOCKER_PASSWORD as variable)
+  #         ssh -o StrictHostKeyChecking=no -i deploy_key.pem $EC2_USER@$EC2_HOST << EOF
+  #           # Login to Docker Hub
+  #           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "$DOCKER_USERNAME" --password-stdin
             
-            # Pull latest image
-            docker pull $DOCKER_USERNAME/house-segmentation:latest
+  #           # Pull latest image
+  #           docker pull $DOCKER_USERNAME/house-segmentation:latest
             
-            # Stop and remove old container
-            docker stop house-segmentation-app || true
-            docker rm house-segmentation-app || true
+  #           # Stop and remove old container
+  #           docker stop house-segmentation-app || true
+  #           docker rm house-segmentation-app || true
             
-            # Run new container
-            docker run -d \
-              --name house-segmentation-app \
-              --restart unless-stopped \
-              -p 5000:5000 \
-              $DOCKER_USERNAME/house-segmentation:latest
+  #           # Run new container
+  #           docker run -d \
+  #             --name house-segmentation-app \
+  #             --restart unless-stopped \
+  #             -p 5000:5000 \
+  #             $DOCKER_USERNAME/house-segmentation:latest
             
-            # Clean up old images
-            docker image prune -a -f
-          EOF
+  #           # Clean up old images
+  #           docker image prune -a -f
+  #         EOF
           
-          # Clean up
-          rm -f deploy_key.pem
+  #         # Clean up
+  #         rm -f deploy_key.pem
       
-      - name: Verify deployment
-        run: |
-          echo "✅ Deployment completed!"
-          echo "🌐 API available at: http://${{ secrets.EC2_HOST }}:5000"
-          echo "🔍 Health check: http://${{ secrets.EC2_HOST }}:5000/health"
+  #     - name: Verify deployment
+  #       run: |
+  #         echo "✅ Deployment completed!"
+  #         echo "🌐 API available at: http://${{ secrets.EC2_HOST }}:5000"
+  #         echo "🔍 Health check: http://${{ secrets.EC2_HOST }}:5000/health"
