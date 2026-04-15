@@ -42,3 +42,5 @@ class SecretsManager:
             return torch.cuda.is_available()
         except:
             return False
+
+secrets = SecretsManager()
