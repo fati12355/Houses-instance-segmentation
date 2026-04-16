@@ -88,7 +88,7 @@ jobs:
           echo "✅ Docker Build: Completed"
           echo "📦 Ready for next steps!"
 
-    # JOB 3: Push to Docker Hub
+    # JOB 4: Push to Docker Hub
   push-to-dockerhub:
     runs-on: ubuntu-latest
     needs: build
@@ -121,51 +121,60 @@ jobs:
           echo "📦 Image: ${{ secrets.DOCKER_USERNAME }}/house-segmentation:latest"
           echo "🔗 https://hub.docker.com/r/${{ secrets.DOCKER_USERNAME }}/house-segmentation"
 
-  # # JOB 3: Deploy to AWS EC2
-  # deploy:
-  #   runs-on: ubuntu-latest
-  #   needs: build
-  #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # JOB 5: Deploy to AWS EC2
+  deploy:
+    runs-on: ubuntu-latest
+    needs: push-to-dockerhub  # ← CHANGE: wait for push to complete
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     
-  #   steps:
-  #     - name: Deploy to EC2
-  #       env:
-  #         EC2_HOST: ${{ secrets.EC2_HOST }}
-  #         EC2_USER: ${{ secrets.EC2_USER }}
-  #         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-  #       run: |
-  #         # Save SSH key
-  #         echo "${{ secrets.EC2_SSH_KEY }}" > deploy_key.pem
-  #         chmod 600 deploy_key.pem
+    steps:
+      - name: Deploy to EC2
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          # Save SSH key
+          echo "${{ secrets.EC2_SSH_KEY }}" > deploy_key.pem
+          chmod 600 deploy_key.pem
           
-  #         # Deploy via SSH (pass DOCKER_PASSWORD as variable)
-  #         ssh -o StrictHostKeyChecking=no -i deploy_key.pem $EC2_USER@$EC2_HOST << EOF
-  #           # Login to Docker Hub
-  #           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "$DOCKER_USERNAME" --password-stdin
+          # Deploy via SSH
+          ssh -o StrictHostKeyChecking=no -i deploy_key.pem $EC2_USER@$EC2_HOST << EOF
+            # Install Docker if not installed
+            if ! command -v docker &> /dev/null; then
+              sudo apt-get update
+              sudo apt-get install -y docker.io
+              sudo systemctl start docker
+              sudo systemctl enable docker
+            fi
             
-  #           # Pull latest image
-  #           docker pull $DOCKER_USERNAME/house_seg:latest
+            # Login to Docker Hub
+            echo "$DOCKER_PASSWORD" | sudo docker login -u "$DOCKER_USERNAME" --password-stdin
             
-  #           # Stop and remove old container
-  #           docker stop house_seg-app || true
-  #           docker rm house_seg-app || true
+            # Pull latest image
+            sudo docker pull $DOCKER_USERNAME/house-segmentation:latest
             
-  #           # Run new container
-  #           docker run -d \
-  #             --name house_seg-app \
-  #             --restart unless-stopped \
-  #             -p 5000:5000 \
-  #             $DOCKER_USERNAME/house_seg:latest
+            # Stop and remove old container
+            sudo docker stop house-segmentation-app || true
+            sudo docker rm house-segmentation-app || true
             
-  #           # Clean up old images
-  #           docker image prune -a -f
-  #         EOF
+            # Run new container
+            sudo docker run -d \
+              --name house-segmentation-app \
+              --restart unless-stopped \
+              -p 5000:5000 \
+              $DOCKER_USERNAME/house-segmentation:latest
+            
+            # Clean up old images
+            sudo docker image prune -a -f
+          EOF
           
-  #         # Clean up
-  #         rm -f deploy_key.pem
+          # Clean up
+          rm -f deploy_key.pem
       
-  #     - name: Verify deployment
-  #       run: |
-  #         echo "✅ Deployment completed!"
-  #         echo "🌐 API available at: http://${{ secrets.EC2_HOST }}:5000"
-  #         echo "🔍 Health check: http://${{ secrets.EC2_HOST }}:5000/health"
+      - name: Verify deployment
+        run: |
+          echo "✅ Deployment completed!"
+          echo "🌐 API available at: http://${{ secrets.EC2_HOST }}:5000"
+          echo "🔍 Health check: http://${{ secrets.EC2_HOST }}:5000/health"
