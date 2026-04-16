@@ -121,10 +121,10 @@ jobs:
           echo "📦 Image: ${{ secrets.DOCKER_USERNAME }}/house-segmentation:latest"
           echo "🔗 https://hub.docker.com/r/${{ secrets.DOCKER_USERNAME }}/house-segmentation"
 
-    # JOB 5: Deploy to AWS EC2
+     # JOB 5: Deploy to AWS EC2
   deploy:
     runs-on: ubuntu-latest
-    needs: push-to-dockerhub  # ← CHANGE: wait for push to complete
+    needs: push-to-dockerhub
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     
     steps:
@@ -139,8 +139,12 @@ jobs:
           echo "${{ secrets.EC2_SSH_KEY }}" > deploy_key.pem
           chmod 600 deploy_key.pem
           
-          # Deploy via SSH
-          ssh -o StrictHostKeyChecking=no -i deploy_key.pem $EC2_USER@$EC2_HOST << EOF
+          # Deploy via SSH with connection keep-alive
+          ssh -o StrictHostKeyChecking=no \
+              -o ServerAliveInterval=60 \
+              -o ServerAliveCountMax=3 \
+              -i deploy_key.pem $EC2_USER@$EC2_HOST << 'EOF'
+            
             # Install Docker if not installed
             if ! command -v docker &> /dev/null; then
               sudo apt-get update
@@ -168,6 +172,8 @@ jobs:
             
             # Clean up old images
             sudo docker image prune -a -f
+            
+            echo "✅ Deployment complete!"
           EOF
           
           # Clean up
@@ -177,4 +183,3 @@ jobs:
         run: |
           echo "✅ Deployment completed!"
           echo "🌐 API available at: http://${{ secrets.EC2_HOST }}:5000"
-          echo "🔍 Health check: http://${{ secrets.EC2_HOST }}:5000/health"
